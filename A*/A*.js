@@ -31,7 +31,7 @@
     start = start;
     end = end;
     openList = [];
-    
+
     // console.log(stones)
     // 初始化 地图各个点
     for( x = 0; x < W; x++ ) {
@@ -45,7 +45,7 @@
         _map[y][x].parent = null;
       }
     }
-    
+
     stones.forEach(function(stone) {
       _map[stone[1]][stone[0]].closed = true;
     });
@@ -87,6 +87,7 @@
 
     // 没有路径
     return null;
+    
   }
 
   // 获取周围的点

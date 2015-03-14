@@ -1,5 +1,5 @@
 var ctx = document.querySelector("#c").getContext('2d');
-var W = 600;
+var W = 400;
 var H = 400;
 var DOT_SIZE = 10;
 var i,
@@ -8,31 +8,26 @@ var i,
     x,y,
     map = [],
     len;
-for(y = 0; y < H / 10; y++) {
+for(y = 0; y < H / DOT_SIZE; y++) {
   map[y] = [];
-  for(x = 0; x < W / 10; x++) {
+  for(x = 0; x < W / DOT_SIZE; x++) {
     map[y][x] = {};
   }
 }
 var snake = {
   body: [[0,0]],
-  food: [2,2],
+  food: [1,3],
   path: [],
   render: function() {
     _this = this;
-    ctx.fillStyle = "#"+Math.floor(Math.random()*0xFFFFFF).toString(16);
+    ctx.fillStyle = getRandomColor();
     _this.body.forEach(function(arr) {
       map[arr[1]][arr[0]].closed = true;
-      // console.log(map[arr[1]][arr[0]])
     });
-    // console.log(_this.body)
     _this.path = _this.findPath({
-      x: _this.body[0][0],
-      y: _this.body[0][1]
-    }, {
       x: _this.food[0],
       y: _this.food[1]
-    }, map, _this.body);
+    });
     if(_this.path) {
       _this.path = _this.path.map(function(obj){
         return [obj.x,obj.y]}
@@ -45,23 +40,28 @@ var snake = {
       } else if(getManhattan(_this.body[0], _this.food) === 1) {
         _this.getPoint();
       }
+    } else {
+      // 如果找不到路了，尝试跳点
+      // var tmpPoint = getRandomPoint();
+      // while(!_this.findPath(tmpPoint)) {
+      //   tmpPoint = getRandomPoint();
+      // }
     }
     
     ctx.fillStyle = "#000";
     _this.body.forEach(function(point) {
       _this.drawDot(point);
     });
-    ctx.fillStyle = "#"+Math.floor(Math.random()*0xFFFFFF).toString(16);
+    ctx.fillStyle = getRandomColor();
     _this.drawDot(_this.food);
   },
   getPoint: function() {
     this.body.unshift(this.food);
-    // console.log(this.body)
     
     while(1) {
-      this.food = [~~(Math.random()*W/10), ~~(Math.random()*H/10)];
+      this.food = getRandomPoint();
       if(this.isContain(this.food)) {
-        this.food = [~~(Math.random()*W/10), ~~(Math.random()*H/10)];
+        this.food = getRandomPoint();
       } else {
         break;
       }
@@ -70,35 +70,42 @@ var snake = {
   getPath: function(path) {
     this.body.unshift(path[0]);
     this.body.pop();
-    // console.log(path.splice(0, 1))
   },
-  findPath: function(start, end, map, stones) {
-    return AStarSearch(start, end, map, stones);
+  findPath: function(target) {
+    return AStarSearch({
+      x: _this.body[0][0],
+      y: _this.body[0][1]
+    }, target, map, this.body);
   },
   drawDot: function(position) {
     ctx.fillRect(position[0]*DOT_SIZE, position[1]*DOT_SIZE, DOT_SIZE, DOT_SIZE);
   },
   isContain: function(point) {
-
-    return this.body.every(function(body) {
-      if(body[0] == point[1] && body[1] == point[0]) {
-        return true;
-      } else {
-        return false;
-      }
+    var checkResult = false;;
+    this.body.forEach(function(body) {
+      if(body[0] == point[0] && body[1] == point[1]) {
+        checkResult = true;
+      } 
     });
-  }
+    return checkResult;
+  },
 }
 
 function render() {
     ctx.clearRect(0,0,W,H);
     snake.render();
 }
+
+function getRandomColor() {
+  return "#"+Math.floor(Math.random()*0xFFFFFF).toString(16);
+}
+function getRandomPoint() {
+  return [~~(Math.random()*W/DOT_SIZE), ~~(Math.random()*H/DOT_SIZE)];
+}
 // 计算曼哈顿距离
 function getManhattan (start, end) {
-  // console.log(start.x +' '+start.y,end.x +' '+ end.y)
   return Math.abs(start[0] - end[0]) + Math.abs(start[1] - end[1]);
 }
 
 render()
-var timer = setInterval(render,1);
+var timer = setInterval(render,30);
